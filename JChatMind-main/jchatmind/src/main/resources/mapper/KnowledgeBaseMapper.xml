@@ -6,6 +6,7 @@
 
     <resultMap id="BaseResultMap" type="com.kama.jchatmind.model.entity.KnowledgeBase">
         <id property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
         <result property="description" column="description" jdbcType="VARCHAR"/>
         <result property="metadata" column="metadata" jdbcType="VARCHAR"/>
@@ -22,6 +23,7 @@
             keyColumn="id" keyProperty="id" useGeneratedKeys="true">
         INSERT INTO knowledge_base
         (
+            user_id,
             name,
             description,
             metadata,
@@ -30,6 +32,7 @@
         )
         VALUES
             (
+                CAST(#{userId} AS uuid),
                 #{name},
                 #{description},
                 CAST(#{metadata} AS jsonb),
@@ -41,6 +44,7 @@
     <select id="selectById" resultMap="BaseResultMap">
         SELECT
             id,
+            user_id,
             name,
             description,
             metadata::text AS metadata,
@@ -53,12 +57,27 @@
     <select id="selectAll" resultMap="BaseResultMap">
         SELECT
             id,
+            user_id,
             name,
             description,
             metadata::text AS metadata,
             created_at,
             updated_at
         FROM knowledge_base
+        ORDER BY updated_at DESC
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT
+            id,
+            user_id,
+            name,
+            description,
+            metadata::text AS metadata,
+            created_at,
+            updated_at
+        FROM knowledge_base
+        WHERE user_id = CAST(#{userId} AS uuid)
         ORDER BY updated_at DESC
     </select>
 

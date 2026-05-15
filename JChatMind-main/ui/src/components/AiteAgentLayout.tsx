@@ -6,7 +6,8 @@ import Content from "../layout/Content.tsx";
 import AgentChatView from "./views/AgentChatView.tsx";
 import KnowledgeBaseView from "./views/KnowledgeBaseView.tsx";
 
-export default function OmniAgentLayout() {
+/** 主应用布局：侧边栏 + 对话/知识库路由 */
+export default function AiteAgentLayout() {
   return (
     <Layout>
       <Sidebar>

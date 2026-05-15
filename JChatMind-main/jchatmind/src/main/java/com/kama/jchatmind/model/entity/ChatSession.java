@@ -13,6 +13,8 @@ import lombok.Data;
 public class ChatSession {
     private String id;
 
+    private String userId;
+
     private String agentId;
 
     private String title;

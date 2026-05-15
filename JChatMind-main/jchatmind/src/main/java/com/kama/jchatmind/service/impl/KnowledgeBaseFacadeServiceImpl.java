@@ -11,6 +11,7 @@ import com.kama.jchatmind.model.request.UpdateKnowledgeBaseRequest;
 import com.kama.jchatmind.model.response.CreateKnowledgeBaseResponse;
 import com.kama.jchatmind.model.response.GetKnowledgeBasesResponse;
 import com.kama.jchatmind.model.vo.KnowledgeBaseVO;
+import com.kama.jchatmind.security.UserContext;
 import com.kama.jchatmind.service.KnowledgeBaseFacadeService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +29,8 @@ public class KnowledgeBaseFacadeServiceImpl implements KnowledgeBaseFacadeServic
 
     @Override
     public GetKnowledgeBasesResponse getKnowledgeBases() {
-        List<KnowledgeBase> knowledgeBases = knowledgeBaseMapper.selectAll();
+        String userId = UserContext.requireUserId();
+        List<KnowledgeBase> knowledgeBases = knowledgeBaseMapper.selectByUserId(userId);
         List<KnowledgeBaseVO> result = new ArrayList<>();
         for (KnowledgeBase knowledgeBase : knowledgeBases) {
             try {
@@ -56,6 +58,7 @@ public class KnowledgeBaseFacadeServiceImpl implements KnowledgeBaseFacadeServic
             LocalDateTime now = LocalDateTime.now();
             knowledgeBase.setCreatedAt(now);
             knowledgeBase.setUpdatedAt(now);
+            knowledgeBase.setUserId(UserContext.requireUserId());
             
             // 插入数据库，ID 由数据库自动生成
             int result = knowledgeBaseMapper.insert(knowledgeBase);
@@ -78,6 +81,9 @@ public class KnowledgeBaseFacadeServiceImpl implements KnowledgeBaseFacadeServic
         if (knowledgeBase == null) {
             throw new BizException("知识库不存在: " + knowledgeBaseId);
         }
+        if (!knowledgeBase.getUserId().equals(UserContext.requireUserId())) {
+            throw new BizException("无权操作该知识库");
+        }
         
         int result = knowledgeBaseMapper.deleteById(knowledgeBaseId);
         if (result <= 0) {
@@ -92,6 +98,9 @@ public class KnowledgeBaseFacadeServiceImpl implements KnowledgeBaseFacadeServic
             KnowledgeBase existingKnowledgeBase = knowledgeBaseMapper.selectById(knowledgeBaseId);
             if (existingKnowledgeBase == null) {
                 throw new BizException("知识库不存在: " + knowledgeBaseId);
+            }
+            if (!existingKnowledgeBase.getUserId().equals(UserContext.requireUserId())) {
+                throw new BizException("无权操作该知识库");
             }
             
             // 将现有 KnowledgeBase 转换为 KnowledgeBaseDTO

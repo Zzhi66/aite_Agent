@@ -2,8 +2,11 @@ package com.kama.jchatmind.exception;
 
 import com.kama.jchatmind.model.common.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -16,6 +19,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BizException.class)
     public ApiResponse<Void> handleBizException(BizException e) {
         return ApiResponse.error(e.getMessage());
+    }
+
+    /**
+     * 处理 Spring Security 权限不足异常
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiResponse<Void> handleAccessDenied(AccessDeniedException e) {
+        return ApiResponse.error("没有权限访问该资源");
     }
 
     /**
@@ -35,3 +47,4 @@ public class GlobalExceptionHandler {
         return ApiResponse.error("服务器内部错误");
     }
 }
+

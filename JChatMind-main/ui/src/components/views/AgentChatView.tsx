@@ -9,6 +9,8 @@ import {
   getChatMessagesBySessionId,
   getChatSession,
 } from "../../api/api.ts";
+import { SERVER_ORIGIN } from "../../api/http.ts";
+import { getAccessToken } from "../../utils/token.ts";
 import { useAgents } from "../../hooks/useAgents.ts";
 import { useChatSessions } from "../../hooks/useChatSessions.ts";
 import EmptyAgentChatView from "./agentChatView/EmptyAgentChatView.tsx";
@@ -139,9 +141,12 @@ const AgentChatView: React.FC = () => {
     if (!chatSessionId || chatSessionId === "new") {
       return;
     }
-    const es = new EventSource(
-      `http://localhost:8080/sse/connect/${chatSessionId}`,
-    );
+    // EventSource 不支持自定义 Header，通过 query param 传递 token
+    const token = getAccessToken();
+    const sseUrl = token
+      ? `${SERVER_ORIGIN}/sse/connect/${chatSessionId}?token=${encodeURIComponent(token)}`
+      : `${SERVER_ORIGIN}/sse/connect/${chatSessionId}`;
+    const es = new EventSource(sseUrl);
     es.onmessage = (event) => {
       console.log("Received message:", event.data);
     };

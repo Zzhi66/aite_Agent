@@ -13,6 +13,8 @@ import lombok.Data;
 public class KnowledgeBase {
     private String id;
 
+    private String userId;
+
     private String name;
 
     private String description;

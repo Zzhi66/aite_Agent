@@ -1,4 +1,5 @@
 import { get, post, patch, del, BASE_URL } from "./http.ts";
+import { getBearerAuthHeaders } from "../utils/token.ts";
 import type { ChatMessageVO, MessageType } from "../types";
 
 // 类型定义
@@ -331,6 +332,7 @@ export async function uploadDocument(
 
   const response = await fetch(`${BASE_URL}/documents/upload`, {
     method: "POST",
+    headers: getBearerAuthHeaders(),
     body: formData,
   });
 

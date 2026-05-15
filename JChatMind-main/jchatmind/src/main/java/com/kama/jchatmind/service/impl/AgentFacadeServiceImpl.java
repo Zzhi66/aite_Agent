@@ -11,6 +11,7 @@ import com.kama.jchatmind.model.request.UpdateAgentRequest;
 import com.kama.jchatmind.model.response.CreateAgentResponse;
 import com.kama.jchatmind.model.response.GetAgentsResponse;
 import com.kama.jchatmind.model.vo.AgentVO;
+import com.kama.jchatmind.security.UserContext;
 import com.kama.jchatmind.service.AgentFacadeService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,8 @@ public class AgentFacadeServiceImpl implements AgentFacadeService {
 
     @Override
     public GetAgentsResponse getAgents() {
-        List<Agent> agents = agentMapper.selectAll();
+        String userId = UserContext.requireUserId();
+        List<Agent> agents = agentMapper.selectByUserId(userId);
         List<AgentVO> result = new ArrayList<>();
         for (Agent agent : agents) {
             try {
@@ -57,6 +59,7 @@ public class AgentFacadeServiceImpl implements AgentFacadeService {
             LocalDateTime now = LocalDateTime.now();
             agent.setCreatedAt(now);
             agent.setUpdatedAt(now);
+            agent.setUserId(UserContext.requireUserId());
             
             // 插入数据库，ID 由数据库自动生成
             int result = agentMapper.insert(agent);
@@ -79,6 +82,9 @@ public class AgentFacadeServiceImpl implements AgentFacadeService {
         if (agent == null) {
             throw new BizException("Agent 不存在: " + agentId);
         }
+        if (!agent.getUserId().equals(UserContext.requireUserId())) {
+            throw new BizException("无权操作该智能体");
+        }
         
         int result = agentMapper.deleteById(agentId);
         if (result <= 0) {
@@ -93,6 +99,9 @@ public class AgentFacadeServiceImpl implements AgentFacadeService {
             Agent existingAgent = agentMapper.selectById(agentId);
             if (existingAgent == null) {
                 throw new BizException("Agent 不存在: " + agentId);
+            }
+            if (!existingAgent.getUserId().equals(UserContext.requireUserId())) {
+                throw new BizException("无权操作该智能体");
             }
             
             // 将现有 Agent 转换为 AgentDTO

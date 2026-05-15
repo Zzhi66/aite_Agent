@@ -12,6 +12,7 @@ import com.kama.jchatmind.model.response.CreateChatSessionResponse;
 import com.kama.jchatmind.model.response.GetChatSessionResponse;
 import com.kama.jchatmind.model.response.GetChatSessionsResponse;
 import com.kama.jchatmind.model.vo.ChatSessionVO;
+import com.kama.jchatmind.security.UserContext;
 import com.kama.jchatmind.service.ChatSessionFacadeService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,8 @@ public class ChatSessionFacadeServiceImpl implements ChatSessionFacadeService {
 
     @Override
     public GetChatSessionsResponse getChatSessions() {
-        List<ChatSession> chatSessions = chatSessionMapper.selectAll();
+        String userId = UserContext.requireUserId();
+        List<ChatSession> chatSessions = chatSessionMapper.selectByUserId(userId);
         List<ChatSessionVO> result = new ArrayList<>();
         for (ChatSession chatSession : chatSessions) {
             try {
@@ -62,7 +64,8 @@ public class ChatSessionFacadeServiceImpl implements ChatSessionFacadeService {
 
     @Override
     public GetChatSessionsResponse getChatSessionsByAgentId(String agentId) {
-        List<ChatSession> chatSessions = chatSessionMapper.selectByAgentId(agentId);
+        String userId = UserContext.requireUserId();
+        List<ChatSession> chatSessions = chatSessionMapper.selectByAgentIdAndUserId(agentId, userId);
         List<ChatSessionVO> result = new ArrayList<>();
         for (ChatSession chatSession : chatSessions) {
             try {
@@ -93,6 +96,7 @@ public class ChatSessionFacadeServiceImpl implements ChatSessionFacadeService {
             LocalDateTime now = LocalDateTime.now();
             chatSession.setCreatedAt(now);
             chatSession.setUpdatedAt(now);
+            chatSession.setUserId(UserContext.requireUserId());
             
             // 插入数据库，ID 由数据库自动生成
             int result = chatSessionMapper.insert(chatSession);
@@ -114,6 +118,9 @@ public class ChatSessionFacadeServiceImpl implements ChatSessionFacadeService {
         ChatSession chatSession = chatSessionMapper.selectById(chatSessionId);
         if (chatSession == null) {
             throw new BizException("聊天会话不存在: " + chatSessionId);
+        }
+        if (!chatSession.getUserId().equals(UserContext.requireUserId())) {
+            throw new BizException("无权操作该会话");
         }
         
         int result = chatSessionMapper.deleteById(chatSessionId);

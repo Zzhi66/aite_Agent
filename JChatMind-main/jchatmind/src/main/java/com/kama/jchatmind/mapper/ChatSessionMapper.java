@@ -2,6 +2,7 @@ package com.kama.jchatmind.mapper;
 
 import com.kama.jchatmind.model.entity.ChatSession;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -20,6 +21,10 @@ public interface ChatSessionMapper {
     List<ChatSession> selectAll();
 
     List<ChatSession> selectByAgentId(String agentId);
+
+    List<ChatSession> selectByUserId(String userId);
+
+    List<ChatSession> selectByAgentIdAndUserId(@Param("agentId") String agentId, @Param("userId") String userId);
 
     int deleteById(String id);
 

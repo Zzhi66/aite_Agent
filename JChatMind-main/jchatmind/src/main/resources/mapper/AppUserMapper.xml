@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kama.jchatmind.mapper.AppUserMapper">
+
+    <resultMap id="BaseResultMap" type="com.kama.jchatmind.model.entity.AppUser">
+        <id property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="nickname" column="nickname" jdbcType="VARCHAR"/>
+        <result property="avatarUrl" column="avatar_url" jdbcType="VARCHAR"/>
+        <result property="role" column="role" jdbcType="VARCHAR"/>
+        <result property="enabled" column="enabled" jdbcType="BOOLEAN"/>
+        <result property="createdAt" column="created_at" jdbcType="TIMESTAMP"/>
+        <result property="updatedAt" column="updated_at" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="com.kama.jchatmind.model.entity.AppUser"
+            keyColumn="id" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO app_user
+        (username,
+         password,
+         nickname,
+         avatar_url,
+         role,
+         enabled,
+         created_at,
+         updated_at)
+        VALUES (#{username},
+                #{password},
+                #{nickname},
+                #{avatarUrl},
+                #{role},
+                #{enabled},
+                #{createdAt},
+                #{updatedAt})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT id,
+               username,
+               password,
+               nickname,
+               avatar_url,
+               role,
+               enabled,
+               created_at,
+               updated_at
+        FROM app_user
+        WHERE id = CAST(#{id} AS uuid)
+    </select>
+
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT id,
+               username,
+               password,
+               nickname,
+               avatar_url,
+               role,
+               enabled,
+               created_at,
+               updated_at
+        FROM app_user
+        WHERE username = #{username}
+    </select>
+
+    <update id="updateById" parameterType="com.kama.jchatmind.model.entity.AppUser">
+        UPDATE app_user
+        <set>
+            <if test="nickname != null">
+                nickname = #{nickname},
+            </if>
+            <if test="avatarUrl != null">
+                avatar_url = #{avatarUrl},
+            </if>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="role != null">
+                role = #{role},
+            </if>
+            <if test="enabled != null">
+                enabled = #{enabled},
+            </if>
+            updated_at = NOW()
+        </set>
+        WHERE id = CAST(#{id} AS uuid)
+    </update>
+</mapper>

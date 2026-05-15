@@ -6,6 +6,7 @@
 
     <resultMap id="BaseResultMap" type="com.kama.jchatmind.model.entity.ChatSession">
         <id property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="userId" column="user_id" jdbcType="VARCHAR"/>
         <result property="agentId" column="agent_id" jdbcType="VARCHAR"/>
         <result property="title" column="title" jdbcType="VARCHAR"/>
         <result property="metadata" column="metadata" jdbcType="VARCHAR"/>
@@ -22,6 +23,7 @@
             keyColumn="id" keyProperty="id" useGeneratedKeys="true">
         INSERT INTO chat_session
         (
+            user_id,
             agent_id,
             title,
             metadata,
@@ -30,6 +32,7 @@
         )
         VALUES
             (
+                CAST(#{userId} AS uuid),
                 CAST(#{agentId} AS uuid),
                 #{title},
                 CAST(#{metadata} AS jsonb),
@@ -41,6 +44,7 @@
     <select id="selectById" resultMap="BaseResultMap">
         SELECT
             id,
+            user_id,
             agent_id,
             title,
             metadata::text AS metadata,
@@ -53,6 +57,7 @@
     <select id="selectAll" resultMap="BaseResultMap">
         SELECT
             id,
+            user_id,
             agent_id,
             title,
             metadata::text AS metadata,
@@ -65,6 +70,7 @@
     <select id="selectByAgentId" resultMap="BaseResultMap">
         SELECT
             id,
+            user_id,
             agent_id,
             title,
             metadata::text AS metadata,
@@ -72,6 +78,35 @@
             updated_at
         FROM chat_session
         WHERE agent_id = CAST(#{agentId} AS uuid)
+        ORDER BY updated_at DESC
+    </select>
+
+    <select id="selectByUserId" resultMap="BaseResultMap">
+        SELECT
+            id,
+            user_id,
+            agent_id,
+            title,
+            metadata::text AS metadata,
+            created_at,
+            updated_at
+        FROM chat_session
+        WHERE user_id = CAST(#{userId} AS uuid)
+        ORDER BY updated_at DESC
+    </select>
+
+    <select id="selectByAgentIdAndUserId" resultMap="BaseResultMap">
+        SELECT
+            id,
+            user_id,
+            agent_id,
+            title,
+            metadata::text AS metadata,
+            created_at,
+            updated_at
+        FROM chat_session
+        WHERE agent_id = CAST(#{agentId} AS uuid)
+          AND user_id = CAST(#{userId} AS uuid)
         ORDER BY updated_at DESC
     </select>
 
